@@ -2,11 +2,21 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-solc_version = "0.8.24"
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "forge-std/=lib/openzeppelin-contracts/lib/forge-std/src/"
+]
+chain_id = 56
+solc_version = "0.8.30"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
 
 [rpc_endpoints]
-anvil = "http://127.0.0.1:8545"
-sepolia = "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"
+bsctest = "https://data-seed-prebsc-1-s1.binance.org:8545"
+bnbTestnet = "https://bsc-testnet.public.blastapi.io"
+bnbMainnet = "${BNB_MAINNET_RPC_URL}"
+sepolia = "${SEPOLIA_RPC_URL}"
 
-[etherscan]
-sepolia = { key = "YOUR_ETHERSCAN_API_KEY" }
+[profile.fork]
+url = "https://bsc-testnet.publicnode.com"
