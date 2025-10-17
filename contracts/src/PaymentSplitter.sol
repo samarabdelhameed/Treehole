@@ -1,53 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./interfaces/IPaymentSplitter.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PaymentSplitter is IPaymentSplitter, Ownable, ReentrancyGuard {
-    IERC20 public immutable token;
-    address public treasury;
+contract PaymentSplitter is ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
-    constructor(address _token, address _treasury) Ownable(msg.sender) {
-        require(_token != address(0), "Invalid token address");
-        require(_treasury != address(0), "Invalid treasury address");
-        
-        token = IERC20(_token);
+    address public immutable treasury;
+
+    event PaymentProcessed(
+        address indexed payer,
+        address indexed listener,
+        uint256 amount,
+        uint256 extensionTimeSeconds
+    );
+
+    constructor(address _treasury) {
+        require(_treasury != address(0), "Treasury cannot be zero address");
         treasury = _treasury;
     }
 
     function payAndSplit(
-        uint256 amount,
+        IERC20 token,
         address listener,
+        uint256 amount,
         uint256 extensionTimeSeconds
-    ) external nonReentrant {
-        require(amount > 0, "Amount must be greater than 0");
-        require(listener != address(0), "Invalid listener address");
-        
-        // Transfer full amount from payer
-        require(
-            token.transferFrom(msg.sender, address(this), amount),
-            "Transfer failed"
-        );
-        
-        // Split 50/50
-        uint256 halfAmount = amount / 2;
-        
-        // Send to listener and treasury
-        require(token.transfer(listener, halfAmount), "Transfer to listener failed");
-        require(token.transfer(treasury, halfAmount), "Transfer to treasury failed");
-        
-        emit PaymentProcessed(msg.sender, listener, amount, extensionTimeSeconds);
-    }
+    ) public nonReentrant {
+        require(amount > 0, "Amount must be greater than zero");
+        require(listener != address(0), "Listener cannot be zero address");
 
-    function setTreasury(address newTreasury) external onlyOwner {
-        require(newTreasury != address(0), "Invalid treasury address");
-        
-        address oldTreasury = treasury;
-        treasury = newTreasury;
-        
-        emit TreasuryUpdated(oldTreasury, newTreasury);
+        token.safeTransferFrom(msg.sender, address(this), amount);
+
+        uint256 listenerShare = amount / 2;
+        uint256 treasuryShare = amount - listenerShare;
+
+        token.safeTransfer(listener, listenerShare);
+        token.safeTransfer(treasury, treasuryShare);
+
+        emit PaymentProcessed(msg.sender, listener, amount, extensionTimeSeconds);
     }
 }

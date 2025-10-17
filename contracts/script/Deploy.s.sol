@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
-import "../src/TestToken.sol";
-import "../src/PaymentSplitter.sol";
+import {TestToken} from "../src/TestToken.sol";
+import {PaymentSplitter} from "../src/PaymentSplitter.sol";
 
 contract DeployScript is Script {
     function run() external {
@@ -16,8 +16,8 @@ contract DeployScript is Script {
         TestToken token = new TestToken();
         console.log("TestToken deployed at:", address(token));
         
-        // Deploy PaymentSplitter
-        PaymentSplitter splitter = new PaymentSplitter(address(token), treasury);
+        // Deploy PaymentSplitter (treasury only)
+        PaymentSplitter splitter = new PaymentSplitter(treasury);
         console.log("PaymentSplitter deployed at:", address(splitter));
         
         vm.stopBroadcast();
