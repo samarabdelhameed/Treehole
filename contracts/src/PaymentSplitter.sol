@@ -3,14 +3,14 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IPaymentSplitter.sol";
 
 contract PaymentSplitter is IPaymentSplitter, Ownable, ReentrancyGuard {
     IERC20 public immutable token;
     address public treasury;
 
-    constructor(address _token, address _treasury) {
+    constructor(address _token, address _treasury) Ownable(msg.sender) {
         require(_token != address(0), "Invalid token address");
         require(_treasury != address(0), "Invalid treasury address");
         

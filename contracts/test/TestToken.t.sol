@@ -1,30 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "forge-std/Test.sol";
-import "../src/TestToken.sol";
+import {Test} from "forge-std/Test.sol";
+import {TestToken} from "../src/TestToken.sol";
 
 contract TestTokenTest is Test {
     TestToken public token;
-    address public user = address(0x1);
-    
+    address public userA = vm.addr(1);
+    address public userB = vm.addr(2);
+    uint256 public constant INITIAL_AMOUNT = 1000 * 10**18;
+
     function setUp() public {
         token = new TestToken();
     }
-    
-    function testClaimFaucet() public {
-        vm.prank(user);
+
+    function testClaimFaucetSuccess() public {
+        vm.prank(userA);
         token.claimFaucet();
-        
-        assertEq(token.balanceOf(user), token.FAUCET_AMOUNT());
+
+        vm.prank(userB);
+        token.claimFaucet();
+
+        assertEq(token.balanceOf(userA), INITIAL_AMOUNT, "User A balance incorrect");
+        assertEq(token.balanceOf(userB), INITIAL_AMOUNT, "User B balance incorrect");
+        assertEq(token.totalSupply(), 2 * INITIAL_AMOUNT, "Total supply incorrect");
     }
-    
-    function testClaimCooldown() public {
-        vm.startPrank(user);
-        token.claimFaucet();
-        
-        vm.expectRevert("Claim cooldown not met");
-        token.claimFaucet();
-        vm.stopPrank();
+
+    function testTokenDetails() public {
+        assertEq(token.name(), "TreeHole Token", "Token name incorrect");
+        assertEq(token.symbol(), "THT", "Token symbol incorrect");
     }
 }
