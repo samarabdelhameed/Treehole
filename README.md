@@ -22,20 +22,20 @@ Teams ship together but get paid separately. Web3 makes splitting trustless, yet
 
 ```mermaid
 graph TD
-  A[User Wallet (EVM)] --> B[Frontend (Vite + Vanilla JS + Tailwind)]
-  B -->|ethers.js| C[Smart Contracts (Foundry)]
-  C -->|Events/State| B
-  B --> D[Optional Backend (Node)]
-  D -->|Index/Notify (future)| B
+  A[User Wallet] --> B[Frontend]
+  B -->|ethers| C[Contracts]
+  C -->|events| B
+  B --> D[Backend]
+  D -->|index/notify (future)| B
 
   subgraph Contracts
     C1[PaymentSplitter.sol]
     C2[TestToken.sol]
   end
 
-  C1 -->|Split| A
-  A -->|Deposit ETH/ERC20| C1
-  A -->|Mint/Test| C2
+  C1 -->|split| A
+  A -->|deposit ETH/ERC20| C1
+  A -->|mint/test| C2
 ```
 
 ### Sequence: Deposit and Split
@@ -44,15 +44,15 @@ graph TD
 sequenceDiagram
   participant U as User
   participant F as Frontend
-  participant S as PaymentSplitter.sol
+  participant S as PaymentSplitter
 
   U->>F: Connect wallet
-  U->>F: Enter recipients + shares
+  U->>F: Enter recipients and shares
   F->>S: deploySplitter(recipients, shares)
   U->>S: deposit(ETH/ERC20)
-  S->>S: account balances per recipient
+  S->>S: update balances per recipient
   U->>S: release(recipient)
-  S-->>U: tokens/ETH transferred
+  S-->>U: transfer tokens/ETH
 ```
 
 ## Features
