@@ -1,17 +1,97 @@
-# EthOnline 2025 - Payment Splitter DApp
+<div align="center">
 
-A decentralized application for payment splitting with countdown timer functionality.
+# Treehole — Payment Splitter DApp (EthOnline 2025)
+
+Effortless, transparent revenue sharing for teams, DAOs, and creators.
+
+</div>
+
+---
+
+### Why Treehole?
+
+Teams ship together but get paid separately. Web3 makes splitting trustless, yet most tools are clunky or opaque. Treehole delivers an elegant, auditable flow to deposit funds and instantly split them among stakeholders with a great user experience and no surprises.
+
+## TL;DR
+
+- **Problem**: Manual revenue sharing is error-prone, slow, and non-transparent.
+- **Solution**: A smart contract–backed splitter with a clean UI and countdown-based flows for time-bound events (e.g., campaign end → distribute).
+- **For Judges**: Run the scripts below, open the app, deposit tokens/ETH, and see instant, verifiable splits. Architecture and security choices are documented with diagrams.
+
+## Architecture Overview
+
+```mermaid
+graph TD
+  A[User Wallet (EVM)] --> B[Frontend (Vite + Vanilla JS + Tailwind)]
+  B -->|ethers.js| C[Smart Contracts (Foundry)]
+  C -->|Events/State| B
+  B --> D[Optional Backend (Node)]
+  D -->|Index/Notify (future)| B
+
+  subgraph Contracts
+    C1[PaymentSplitter.sol]
+    C2[TestToken.sol]
+  end
+
+  C1 -->|Split| A
+  A -->|Deposit ETH/ERC20| C1
+  A -->|Mint/Test| C2
+```
+
+### Sequence: Deposit and Split
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant F as Frontend
+  participant S as PaymentSplitter.sol
+
+  U->>F: Connect wallet
+  U->>F: Enter recipients + shares
+  F->>S: deploySplitter(recipients, shares)
+  U->>S: deposit(ETH/ERC20)
+  S->>S: account balances per recipient
+  U->>S: release(recipient)
+  S-->>U: tokens/ETH transferred
+```
+
+## Features
+
+- **Trustless revenue sharing** for ETH and ERC‑20.
+- **Countdown flows** for time-boxed releases (e.g., accept funds until T, then enable claim).
+- **Gas- and UX-optimized** interactions with clear states and toasts.
+- **No backend required**; optional services can index events or notify users later.
 
 ## Project Structure
 
-- `contracts/` - Foundry (Solidity smart contracts)
-- `frontend/` - Vite + Vanilla JS + Tailwind CSS
-- `scripts/` - Automation scripts
-- `backend/` - Optional backend services (future use)
+- `contracts/` — Foundry (Solidity)
+- `frontend/` — Vite + Vanilla JS + Tailwind CSS
+- `scripts/` — Dev and deployment helpers
+- `backend/` — Optional Node server (future indexing/notifications)
 
-## Quick Start
+## User Experience Highlights
+
+- **One-screen flow**: connect, configure recipients/shares, deposit, distribute.
+- **Clarity by design**: real-time balances, pending/claimable states, explicit error toasts.
+- **Accessibility**: keyboard-first flows, high-contrast, responsive layout.
+- **Defense-in-depth UX**: confirmations for value-affecting actions, network and chain guards.
+
+### Demo Flow (What to Show in Judging)
+
+1. Connect wallet on testnet.
+2. Create a splitter with 3 recipients and custom shares.
+3. Deposit test ETH or use `TestToken`.
+4. Trigger countdown end (or skip) and call release/claim.
+5. Show on-chain events and matching UI state.
+
+## Getting Started
+
+### Prerequisites
+
+- Foundry (`forge`), `bun`, Node 18+
 
 ### Contracts
+
 ```bash
 cd contracts
 forge build
@@ -19,33 +99,77 @@ forge test -vvv
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 bun install
 bun run dev
 ```
 
-### Local Development
+### Local Development End-to-End
+
 ```bash
-# Start local blockchain
+# 1) Start local chain (Anvil)
 bash scripts/dev-anvil.sh
 
-# Deploy contracts
+# 2) Deploy contracts (reads network config inside the script)
 bash scripts/deploy-testnet.sh
 
-# Sync ABI files
+# 3) Sync ABI into frontend/public/abi
 node scripts/sync-abi.js
 
-# Start frontend
+# 4) Launch the web app
 bash scripts/start-web.sh
 ```
 
-## Environment Setup
+If you use a testnet instead of local Anvil, make sure your wallet is on the same chain as configured in `frontend/src/chains.js` and `frontend/src/contracts.js`.
 
-Copy `.env.example` to `.env` and configure your variables.
+## Smart Contracts
 
-## Security Notes
+- `PaymentSplitter.sol`: Holds deposits and computes each recipient’s claim based on predefined shares. Supports ETH and ERC‑20. Emits events for UI syncing.
+- `TestToken.sol`: Simple ERC‑20 for local testing and demo funding.
 
-- Never commit private keys
-- Use testnet for development
-- Verify all contract interactions
+### Security Considerations
+
+- Pull-based withdrawals reduce reentrancy surfaces; external calls are minimized.
+- Follows checks-effects-interactions; uses well-audited interfaces.
+- No private keys in repo; deploy via environment variables and local wallets.
+- Extensive unit tests in `contracts/test/`.
+
+## Frontend
+
+- Vite + Vanilla JS for speed, Tailwind for consistent design, and ethers/wagmi-like primitives.
+- Key modules:
+  - `src/wallet.js`: wallet connection and chain guards
+  - `src/ui/*.js`: dialogs, toasts, and feedback
+  - `src/countdown/*`: countdown state and view
+
+## Optional Backend (Future)
+
+The app works fully client-side. A minimal Node service can later index events, cache views, send webhooks/notifications, and serve mobile clients.
+
+```mermaid
+graph LR
+  SC[Smart Contracts] --> IDX[Indexer/Listener]
+  IDX --> DB[(Cache/DB)]
+  DB --> API[REST/Graph]
+  API --> Web[Web/Mobile]
+```
+
+## Testing
+
+```bash
+cd contracts
+forge test -vvv
+```
+
+## Roadmap
+
+- Batch release for many recipients in one tx
+- Role-based administration (owner/operator)
+- Rich analytics and history views
+- Email/Push notifications via optional backend
+
+## Acknowledgements
+
+Built for EthOnline 2025. Thanks to the organizers, mentors, and community.
