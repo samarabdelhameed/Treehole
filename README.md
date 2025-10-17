@@ -184,5 +184,11 @@ Built for EthOnline 2025. Thanks to the organizers, mentors, and community.
 - PaymentSplitter: `0x76d81731e26889Be3718BEB4d43e12C3692753b8`  
   Explorer: https://sepolia.etherscan.io/address/0x76d81731e26889be3718beb4d43e12c3692753b8 (Verified)
 
+### BNB Testnet
+- TestToken: `0xB176c1FA7B3feC56cB23681B6E447A7AE60C5254`  
+  Explorer: https://testnet.bscscan.com/address/0xB176c1FA7B3feC56cB23681B6E447A7AE60C5254 (Verified)
+- PaymentSplitter: `0x76d81731e26889Be3718BEB4d43e12C3692753b8`  
+  Explorer: https://testnet.bscscan.com/address/0x76d81731e26889be3718beb4d43e12c3692753b8 (Verified)
+
 Notes:
 - Environment variables like `PRIVATE_KEY` and RPC URLs must be set locally; `.env` is gitignored and should never be committed.
