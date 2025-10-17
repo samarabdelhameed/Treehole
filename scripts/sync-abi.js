@@ -2,16 +2,22 @@
 
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
-const contractsOutDir = './contracts/out'
-const frontendAbiDir = './frontend/public/abi'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const rootDir = path.resolve(__dirname, '..')
+
+const contractsOutDir = path.join(rootDir, 'contracts/out')
+const frontendAbiDir = path.join(rootDir, 'frontend/public/abi')
 
 const contracts = ['PaymentSplitter', 'TestToken']
 
 function syncABI() {
   console.log('Syncing ABI files...')
+  console.log(`From: ${contractsOutDir}`)
+  console.log(`To:   ${frontendAbiDir}`)
   
-  // Ensure frontend abi directory exists
   if (!fs.existsSync(frontendAbiDir)) {
     fs.mkdirSync(frontendAbiDir, { recursive: true })
   }
