@@ -26,7 +26,7 @@ graph TD
   B -->|ethers| C[Contracts]
   C -->|events| B
   B --> D[Backend]
-  D -->|index/notify (future)| B
+  D -->|index/notify future| B
 
   subgraph Contracts
     C1[PaymentSplitter.sol]
