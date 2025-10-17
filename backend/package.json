@@ -1,0 +1,15 @@
+{
+  "name": "ethonline2025-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Optional backend services for EthOnline 2025",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}

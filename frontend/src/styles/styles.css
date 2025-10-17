@@ -1,0 +1,20 @@
+/* Custom styles */
+.countdown-expired {
+  @apply text-red-600 animate-pulse;
+}
+
+.toast-enter {
+  @apply transform translate-x-full opacity-0;
+}
+
+.toast-enter-active {
+  @apply transform translate-x-0 opacity-100 transition-all duration-300;
+}
+
+.toast-exit {
+  @apply transform translate-x-0 opacity-100;
+}
+
+.toast-exit-active {
+  @apply transform translate-x-full opacity-0 transition-all duration-300;
+}

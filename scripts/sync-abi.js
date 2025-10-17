@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+
+import fs from 'fs'
+import path from 'path'
+
+const contractsOutDir = './contracts/out'
+const frontendAbiDir = './frontend/public/abi'
+
+const contracts = ['PaymentSplitter', 'TestToken']
+
+function syncABI() {
+  console.log('Syncing ABI files...')
+  
+  // Ensure frontend abi directory exists
+  if (!fs.existsSync(frontendAbiDir)) {
+    fs.mkdirSync(frontendAbiDir, { recursive: true })
+  }
+  
+  contracts.forEach(contractName => {
+    const sourcePath = path.join(contractsOutDir, `${contractName}.sol`, `${contractName}.json`)
+    const targetPath = path.join(frontendAbiDir, `${contractName}.json`)
+    
+    try {
+      if (fs.existsSync(sourcePath)) {
+        const contractData = JSON.parse(fs.readFileSync(sourcePath, 'utf8'))
+        const abiData = {
+          abi: contractData.abi,
+          bytecode: contractData.bytecode
+        }
+        
+        fs.writeFileSync(targetPath, JSON.stringify(abiData, null, 2))
+        console.log(`✓ Synced ${contractName}.json`)
+      } else {
+        console.log(`⚠ Source file not found: ${sourcePath}`)
+      }
+    } catch (error) {
+      console.error(`✗ Failed to sync ${contractName}:`, error.message)
+    }
+  })
+  
+  console.log('ABI sync completed!')
+}
+
+syncABI()
