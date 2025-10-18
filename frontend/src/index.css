@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600
+           text-white font-semibold rounded-xl transition-all duration-300
+           flex items-center gap-2 justify-center shadow-lg hover:shadow-2xl
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600
+           text-white font-semibold rounded-xl transition-all duration-300
+           flex items-center gap-2 justify-center shadow-lg
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-icon {
+    @apply p-3 bg-gradient-to-br from-purple-600/20 to-orange-500/20
+           hover:from-purple-600/40 hover:to-orange-500/40
+           border border-purple-500/30 hover:border-purple-500/60
+           text-white rounded-xl transition-all duration-300 shadow-lg
+           hover:scale-110 active:scale-95;
+  }
+
+  .glass-card {
+    @apply bg-gradient-to-br from-gray-900/90 via-purple-900/20 to-gray-900/90
+           backdrop-blur-xl rounded-2xl border border-purple-500/30
+           shadow-2xl transition-all duration-300 hover:border-purple-500/50;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-800/50 border border-purple-500/30
+           rounded-xl text-white placeholder-gray-500
+           focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20
+           transition-all duration-300;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.5),
+                 0 0 40px rgba(251, 146, 60, 0.3);
+  }
+
+  .glow-box {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6),
+                0 0 60px rgba(251, 146, 60, 0.4);
+  }
+
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .shine-effect:hover::before {
+    left: 100%;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-slideInRight {
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+}
+
+.stars-bg {
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 60px 70px, rgba(168, 85, 247, 0.4), transparent),
+    radial-gradient(1px 1px at 50px 50px, rgba(251, 146, 60, 0.3), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(2px 2px at 90px 10px, rgba(168, 85, 247, 0.3), transparent);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: float 20s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.countdown-display {
+  position: relative;
+}
+
+.countdown-display::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.2) 0%,
+    transparent 70%
+  );
+  animation: pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .btn-primary,
+  .btn-secondary {
+    @apply text-sm px-4 py-2;
+  }
+
+  .glass-card {
+    @apply p-4;
+  }
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #a855f7, #fb923c);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #9333ea, #f97316);
+}
+
+::selection {
+  background-color: rgba(168, 85, 247, 0.3);
+  color: white;
+}
