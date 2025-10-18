@@ -1,0 +1,42 @@
+{
+  "name": "treehole",
+  "version": "1.0.0",
+  "description": "Pay to Listen, Pay to Extend Time - A decentralized listening session platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "./start.sh",
+    "test": "./start.sh test",
+    "deploy": "./start.sh deploy",
+    "stop": "./start.sh stop",
+    "dev": "concurrently \"cd contracts && forge test\" \"cd frontend && npm run dev\" \"cd backend && npm start\"",
+    "build": "cd frontend && npm run build",
+    "install-all": "cd contracts && forge install && cd ../frontend && npm install && cd ../backend && npm install"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "web3",
+    "dapp",
+    "solidity",
+    "react",
+    "typescript",
+    "foundry",
+    "ethonline2025"
+  ],
+  "author": "TreeHole Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/treehole"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/treehole/issues"
+  },
+  "homepage": "https://github.com/your-username/treehole#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

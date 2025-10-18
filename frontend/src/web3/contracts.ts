@@ -60,13 +60,20 @@ export async function approveTokens(
 
 export async function payAndExtend(
   paymentSplitterContract: Contract,
+  tokenContract: Contract,
   listenerAddress: string,
-  extensionMinutes: number
+  extensionMinutes: number,
+  amount: string
 ): Promise<any> {
   try {
+    const amountWei = parseUnits(amount, 18);
+    const extensionSeconds = extensionMinutes * 60;
+    
     const tx = await paymentSplitterContract.payAndSplit(
+      tokenContract,
       listenerAddress,
-      extensionMinutes
+      amountWei,
+      extensionSeconds
     );
     await tx.wait();
     return tx;
@@ -79,11 +86,6 @@ export async function payAndExtend(
 export async function getTokenRatePerMinute(
   paymentSplitterContract: Contract
 ): Promise<string> {
-  try {
-    const rate = await paymentSplitterContract.TOKEN_RATE_PER_MINUTE();
-    return formatUnits(rate, 18);
-  } catch (error) {
-    console.error('Error fetching token rate:', error);
-    return '10';
-  }
+  // Since the contract doesn't have TOKEN_RATE_PER_MINUTE, we'll return a fixed rate
+  return '10';
 }

@@ -160,7 +160,13 @@ function App() {
       );
 
       addToast('Step 2/2: Processing payment...', 'info');
-      await payAndExtend(contracts.paymentSplitter, listenerAddress, extensionMinutes);
+      await payAndExtend(
+        contracts.paymentSplitter,
+        contracts.testToken,
+        listenerAddress,
+        extensionMinutes,
+        totalCost
+      );
 
       const newBalance = await getTokenBalance(contracts.testToken, wallet.address);
       setBalance(newBalance);
