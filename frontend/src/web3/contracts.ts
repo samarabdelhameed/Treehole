@@ -1,11 +1,11 @@
 import { Contract, formatUnits, parseUnits } from 'ethers';
 import type { JsonRpcSigner } from 'ethers';
-import TestTokenABI from '../../public/abi/TestToken.json';
-import PaymentSplitterABI from '../../public/abi/PaymentSplitter.json';
+import TestTokenABI from '../abi/TestToken.json';
+import PaymentSplitterABI from '../abi/PaymentSplitter.json';
 
 export const CONTRACT_ADDRESSES = {
-  testToken: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-  paymentSplitter: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
+  testToken: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
+  paymentSplitter: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',
 };
 
 export interface ContractInstances {

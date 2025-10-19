@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Wallet, Droplet, Plus, Minus, Clock, Coins } from 'lucide-react';
+import { Wallet, Droplet, Plus, Minus, Clock, Coins, Settings, History } from 'lucide-react';
 import Countdown from './ui/Countdown';
 import Modal from './ui/Modal';
 import Toast, { ToastType } from './ui/Toast';
+import SettingsPanel from './ui/SettingsPanel';
+import PaymentHistory from './ui/PaymentHistory';
 import {
   connectWallet,
   disconnectWallet,
@@ -21,6 +23,9 @@ import {
 } from './web3/contracts';
 import { claimFaucet, getFaucetAmount } from './web3/faucet';
 import { minutesToSeconds } from './utils/time';
+import { soundManager } from './utils/sounds';
+import { storageManager } from './utils/storage';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 interface ToastMessage {
   message: string;
@@ -38,17 +43,34 @@ function App() {
   const [contracts, setContracts] = useState<ContractInstances | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [tokenRate, setTokenRate] = useState<string>('10');
-  const [extensionMinutes, setExtensionMinutes] = useState<number>(10);
+  const [extensionMinutes, setExtensionMinutes] = useState<number>(
+    storageManager.getUserPreferences().defaultExtensionMinutes
+  );
   const [listenerAddress, setListenerAddress] = useState<string>('');
   const [timerSeconds, setTimerSeconds] = useState<number>(900);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((message: string, type: ToastType) => {
     const id = Date.now();
     setToasts((prev) => [...prev, { message, type, id }]);
+    
+    // Play sound based on toast type
+    switch (type) {
+      case 'success':
+        soundManager.playPaymentSuccess();
+        break;
+      case 'error':
+        soundManager.playError();
+        break;
+      case 'warning':
+        soundManager.playTimerWarning();
+        break;
+    }
   }, []);
 
   const removeToast = useCallback((id: number) => {
@@ -125,6 +147,15 @@ function App() {
     addToast('Timer paused', 'info');
   };
 
+  const handleResetTimer = () => {
+    setIsTimerRunning(false);
+    // Generate random time between 5-15 minutes (300-900 seconds)
+    const randomMinutes = Math.floor(Math.random() * 11) + 5; // 5-15 minutes
+    const randomSeconds = randomMinutes * 60;
+    setTimerSeconds(randomSeconds);
+    addToast(`Timer reset to ${randomMinutes} minutes`, 'info');
+  };
+
   const handlePayToExtend = async () => {
     if (!contracts || !wallet.address) {
       addToast('Please connect your wallet first', 'warning');
@@ -160,13 +191,23 @@ function App() {
       );
 
       addToast('Step 2/2: Processing payment...', 'info');
-      await payAndExtend(
+      const tx = await payAndExtend(
         contracts.paymentSplitter,
         contracts.testToken,
         listenerAddress,
         extensionMinutes,
         totalCost
       );
+
+      // Add to payment history
+      const paymentRecord = storageManager.addPaymentRecord({
+        type: 'sent',
+        amount: totalCost,
+        extensionMinutes,
+        counterparty: listenerAddress,
+        txHash: tx.hash,
+        status: 'completed'
+      });
 
       const newBalance = await getTokenBalance(contracts.testToken, wallet.address);
       setBalance(newBalance);
@@ -203,7 +244,76 @@ function App() {
     onChainChanged(() => {
       window.location.reload();
     });
-  }, [contracts]);
+
+    // Listen for PaymentProcessed events
+    if (contracts && wallet.address) {
+      const paymentSplitter = contracts.paymentSplitter;
+      
+      const handlePaymentProcessed = (payer: string, listener: string, amount: any, extensionSeconds: any, event: any) => {
+        // If current user is the listener, show notification and extend timer
+        if (listener.toLowerCase() === wallet.address?.toLowerCase()) {
+          const extensionMinutes = Number(extensionSeconds) / 60;
+          const paymentAmount = Number(amount) / 1e18; // Convert from wei
+          
+          // Check user preferences for auto-accept
+          const preferences = storageManager.getUserPreferences();
+          let acceptPayment = preferences.autoAcceptPayments;
+          
+          if (!acceptPayment) {
+            // Show acceptance prompt
+            acceptPayment = window.confirm(
+              `You received a payment of ${paymentAmount.toFixed(2)} THT for ${extensionMinutes} minutes extension. Accept?`
+            );
+          }
+          
+          if (acceptPayment) {
+            // Add to payment history
+            storageManager.addPaymentRecord({
+              type: 'received',
+              amount: paymentAmount.toFixed(2),
+              extensionMinutes,
+              counterparty: payer,
+              txHash: event.log.transactionHash,
+              status: 'completed'
+            });
+            
+            addToast(`Payment accepted! Timer extended by ${extensionMinutes} minutes`, 'success');
+            // Extend the timer
+            setTimerSeconds(prev => prev + Number(extensionSeconds));
+          } else {
+            addToast('Payment declined', 'warning');
+            // Note: In a real implementation, you might want to refund the payment
+          }
+        }
+      };
+
+      paymentSplitter.on('PaymentProcessed', handlePaymentProcessed);
+
+      return () => {
+        paymentSplitter.off('PaymentProcessed', handlePaymentProcessed);
+      };
+    }
+  }, [contracts, wallet.address]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onStartTimer: () => {
+      if (wallet.isConnected) {
+        if (!isTimerRunning) {
+          handleStartTimer();
+        } else {
+          handleStopTimer();
+        }
+      }
+    },
+    onResetTimer: handleResetTimer,
+    onOpenSettings: () => setShowSettings(true),
+    onOpenHistory: () => setShowHistory(true),
+    onToggleSound: () => {
+      soundManager.toggle();
+      addToast(`Sound ${soundManager.isEnabled() ? 'enabled' : 'disabled'}`, 'info');
+    }
+  });
 
   const totalCost = (parseFloat(tokenRate) * extensionMinutes).toFixed(2);
 
@@ -240,6 +350,20 @@ function App() {
                   {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
                 </span>
               </div>
+              <button 
+                onClick={() => setShowHistory(true)} 
+                className="btn-icon"
+                title="Payment History"
+              >
+                <History size={20} />
+              </button>
+              <button 
+                onClick={() => setShowSettings(true)} 
+                className="btn-icon"
+                title="Settings"
+              >
+                <Settings size={20} />
+              </button>
               <button onClick={handleDisconnect} className="btn-secondary">
                 Disconnect
               </button>
@@ -276,9 +400,16 @@ function App() {
                     isRunning={isTimerRunning}
                     onTimeEnd={() => {
                       setIsTimerRunning(false);
+                      soundManager.playTimerEnd();
                       addToast('Time is up!', 'warning');
                     }}
-                    onTimeUpdate={(seconds) => setTimerSeconds(seconds)}
+                    onTimeUpdate={(seconds) => {
+                      setTimerSeconds(seconds);
+                      // Play warning sound at 60 seconds
+                      if (seconds === 60) {
+                        soundManager.playTimerWarning();
+                      }
+                    }}
                   />
 
                   <div className="mt-8 flex gap-4 justify-center">
@@ -292,6 +423,9 @@ function App() {
                         Pause
                       </button>
                     )}
+                    <button onClick={handleResetTimer} className="btn-secondary">
+                      Reset
+                    </button>
                   </div>
                 </div>
               </div>
@@ -442,6 +576,18 @@ function App() {
           onClose={() => removeToast(toast.id)}
         />
       ))}
+
+      {/* Settings Panel */}
+      <SettingsPanel 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
+
+      {/* Payment History */}
+      <PaymentHistory 
+        isOpen={showHistory} 
+        onClose={() => setShowHistory(false)} 
+      />
     </div>
   );
 }
