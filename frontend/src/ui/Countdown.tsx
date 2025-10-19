@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { formatTime } from '../utils/time';
 
 interface CountdownProps {
@@ -15,28 +15,55 @@ export default function Countdown({
   onTimeUpdate,
 }: CountdownProps) {
   const [seconds, setSeconds] = useState(initialSeconds);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onTimeEndRef = useRef(onTimeEnd);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
+
+  // Update refs when props change
+  useEffect(() => {
+    onTimeEndRef.current = onTimeEnd;
+    onTimeUpdateRef.current = onTimeUpdate;
+  });
 
   useEffect(() => {
     setSeconds(initialSeconds);
   }, [initialSeconds]);
 
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const interval = setInterval(() => {
-      setSeconds((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          onTimeEnd?.();
-          return 0;
+  const tick = useCallback(() => {
+    setSeconds((prev) => {
+      const newTime = prev - 1;
+      if (newTime <= 0) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
-        onTimeUpdate?.(newTime);
-        return newTime;
-      });
-    }, 1000);
+        // Use setTimeout to avoid setState during render
+        setTimeout(() => onTimeEndRef.current?.(), 0);
+        return 0;
+      }
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => onTimeUpdateRef.current?.(newTime), 0);
+      return newTime;
+    });
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [isRunning, onTimeEnd, onTimeUpdate]);
+  useEffect(() => {
+    if (isRunning && seconds > 0) {
+      intervalRef.current = setInterval(tick, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isRunning, tick]);
 
   return (
     <div className="countdown-display">
