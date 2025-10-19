@@ -1,0 +1,13 @@
+{
+  "name": "treehole-contract-deployment",
+  "version": "1.0.0",
+  "description": "Deploy TreeHole contracts to Sepolia testnet",
+  "scripts": {
+    "deploy": "node deploy-script.js",
+    "verify": "node verify-contracts.js"
+  },
+  "dependencies": {
+    "ethers": "^6.15.0"
+  },
+  "devDependencies": {}
+}

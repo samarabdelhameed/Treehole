@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Settings, Volume2, VolumeX, Bell, BellOff, Palette } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Bell, BellOff, Palette, Activity } from 'lucide-react';
 import Modal from './Modal';
 import { storageManager, UserPreferences } from '../utils/storage';
 import { soundManager } from '../utils/sounds';
+import { runDiagnostics, formatDiagnosticResults } from '../utils/diagnostics';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface SettingsPanelProps {
 
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const [preferences, setPreferences] = useState<UserPreferences>(storageManager.getUserPreferences());
+  const [isRunningDiagnostics, setIsRunningDiagnostics] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,6 +38,43 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   const stats = storageManager.getPaymentStats();
 
+  const handleRunDiagnostics = async () => {
+    setIsRunningDiagnostics(true);
+    try {
+      const results = await runDiagnostics();
+      const report = formatDiagnosticResults(results);
+
+      // Create a new window to show the report
+      const reportWindow = window.open('', '_blank', 'width=800,height=600');
+      if (reportWindow) {
+        reportWindow.document.write(`
+          <html>
+            <head>
+              <title>TreeHole Diagnostics Report</title>
+              <style>
+                body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+                pre { white-space: pre-wrap; word-wrap: break-word; }
+              </style>
+            </head>
+            <body>
+              <pre>${report}</pre>
+              <button onclick="window.close()" style="margin-top: 20px; padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+            </body>
+          </html>
+        `);
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(report);
+        alert('Diagnostics report copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Failed to run diagnostics:', error);
+      alert('Failed to run diagnostics. Check console for details.');
+    } finally {
+      setIsRunningDiagnostics(false);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Settings & Stats">
       <div className="space-y-6">
@@ -45,7 +84,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Volume2 size={20} />
             Audio Settings
           </h3>
-          
+
           <div className="flex items-center justify-between p-3 glass-card">
             <div className="flex items-center gap-3">
               {preferences.soundEnabled ? (
@@ -57,14 +96,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
             <button
               onClick={() => updatePreference('soundEnabled', !preferences.soundEnabled)}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                preferences.soundEnabled ? 'bg-green-500' : 'bg-gray-600'
-              }`}
+              className={`w-12 h-6 rounded-full transition-colors ${preferences.soundEnabled ? 'bg-green-500' : 'bg-gray-600'
+                }`}
             >
               <div
-                className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                  preferences.soundEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`w-5 h-5 bg-white rounded-full transition-transform ${preferences.soundEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </div>
@@ -76,7 +113,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Bell size={20} />
             Notifications
           </h3>
-          
+
           <div className="flex items-center justify-between p-3 glass-card">
             <div className="flex items-center gap-3">
               {preferences.notifications ? (
@@ -88,14 +125,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
             <button
               onClick={() => updatePreference('notifications', !preferences.notifications)}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                preferences.notifications ? 'bg-blue-500' : 'bg-gray-600'
-              }`}
+              className={`w-12 h-6 rounded-full transition-colors ${preferences.notifications ? 'bg-blue-500' : 'bg-gray-600'
+                }`}
             >
               <div
-                className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                  preferences.notifications ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`w-5 h-5 bg-white rounded-full transition-transform ${preferences.notifications ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </div>
@@ -106,14 +141,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
             <button
               onClick={() => updatePreference('autoAcceptPayments', !preferences.autoAcceptPayments)}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                preferences.autoAcceptPayments ? 'bg-purple-500' : 'bg-gray-600'
-              }`}
+              className={`w-12 h-6 rounded-full transition-colors ${preferences.autoAcceptPayments ? 'bg-purple-500' : 'bg-gray-600'
+                }`}
             >
               <div
-                className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                  preferences.autoAcceptPayments ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`w-5 h-5 bg-white rounded-full transition-transform ${preferences.autoAcceptPayments ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </div>
@@ -125,7 +158,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Settings size={20} />
             Defaults
           </h3>
-          
+
           <div className="p-3 glass-card">
             <label className="block text-sm text-gray-300 mb-2">
               Default Extension Minutes
@@ -147,7 +180,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Palette size={20} />
             Payment Statistics
           </h3>
-          
+
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 glass-card text-center">
               <div className="text-2xl font-bold text-green-400">{stats.total.received}</div>
@@ -180,6 +213,27 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Diagnostics */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Activity size={20} />
+            Diagnostics
+          </h3>
+
+          <button
+            onClick={handleRunDiagnostics}
+            disabled={isRunningDiagnostics}
+            className="w-full btn-primary"
+          >
+            <Activity size={20} />
+            {isRunningDiagnostics ? 'Running Diagnostics...' : 'Run System Diagnostics'}
+          </button>
+
+          <p className="text-xs text-gray-400">
+            Check wallet connection, network, contracts, and balances
+          </p>
         </div>
 
         {/* Actions */}

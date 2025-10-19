@@ -21,13 +21,12 @@ export default function Countdown({
   }, [initialSeconds]);
 
   useEffect(() => {
-    if (!isRunning || seconds <= 0) return;
+    if (!isRunning) return;
 
     const interval = setInterval(() => {
       setSeconds((prev) => {
         const newTime = prev - 1;
         if (newTime <= 0) {
-          clearInterval(interval);
           onTimeEnd?.();
           return 0;
         }
@@ -37,7 +36,7 @@ export default function Countdown({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, seconds, onTimeEnd, onTimeUpdate]);
+  }, [isRunning, onTimeEnd, onTimeUpdate]);
 
   return (
     <div className="countdown-display">

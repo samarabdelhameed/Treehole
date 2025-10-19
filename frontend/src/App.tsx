@@ -8,6 +8,7 @@ import PaymentHistory from './ui/PaymentHistory';
 import {
   connectWallet,
   disconnectWallet,
+  switchToSepoliaNetwork,
   onAccountsChanged,
   onChainChanged,
   type WalletState,
@@ -21,6 +22,7 @@ import {
   CONTRACT_ADDRESSES,
   type ContractInstances,
 } from './web3/contracts';
+
 import { claimFaucet, getFaucetAmount } from './web3/faucet';
 import { minutesToSeconds } from './utils/time';
 import { soundManager } from './utils/sounds';
@@ -84,19 +86,32 @@ function App() {
       setWallet(walletState);
 
       if (walletState.signer) {
-        const contractInstances = getContracts(walletState.signer);
-        setContracts(contractInstances);
+        // Verify we're on Sepolia testnet
+        if (walletState.chainId !== 11155111) {
+          addToast('Please switch to Sepolia testnet', 'warning');
+          return;
+        }
 
-        const bal = await getTokenBalance(
-          contractInstances.testToken,
-          walletState.address!
-        );
-        setBalance(bal);
+        // Always use real contracts - no mocking
+        try {
+          const contractInstances = getContracts(walletState.signer);
+          setContracts(contractInstances);
 
-        const rate = await getTokenRatePerMinute(contractInstances.paymentSplitter);
-        setTokenRate(rate);
+          const bal = await getTokenBalance(
+            contractInstances.testToken,
+            walletState.address!
+          );
+          setBalance(bal);
 
-        addToast('Wallet connected successfully!', 'success');
+          const rate = await getTokenRatePerMinute(contractInstances.paymentSplitter);
+          setTokenRate(rate);
+        } catch (contractError: any) {
+          console.error('Contract initialization error:', contractError);
+          addToast(`Contract error: ${contractError.message}`, 'error');
+          return;
+        }
+
+        addToast('Wallet connected successfully to Sepolia testnet!', 'success');
       }
     } catch (error: any) {
       addToast(error.message || 'Failed to connect wallet', 'error');
@@ -119,7 +134,7 @@ function App() {
   };
 
   const handleClaimFaucet = async () => {
-    if (!contracts || !wallet.address) {
+    if (!contracts || !contracts.testToken || !wallet.address) {
       addToast('Please connect your wallet first', 'warning');
       return;
     }
@@ -344,6 +359,7 @@ function App() {
               <div className="glass-card px-4 py-2 flex items-center gap-2">
                 <Coins size={20} className="text-yellow-400" />
                 <span className="font-mono font-bold">{parseFloat(balance).toFixed(2)} THT</span>
+
               </div>
               <div className="glass-card px-4 py-2">
                 <span className="text-sm text-gray-300">
@@ -438,15 +454,44 @@ function App() {
                   </h3>
                   <p className="text-gray-300 mb-4">
                     Claim {getFaucetAmount()} THT tokens for testing
+
                   </p>
+                  
+                  {wallet.chainId !== 11155111 && (
+                    <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 mb-4">
+                      <p className="text-yellow-200 text-sm mb-2">
+                        ⚠️ Please switch to Sepolia testnet to claim tokens
+                      </p>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await switchToSepoliaNetwork();
+                            addToast('Switched to Sepolia testnet!', 'success');
+                            // Reconnect to refresh state
+                            setTimeout(() => handleConnectWallet(), 1000);
+                          } catch (error: any) {
+                            addToast(error.message || 'Failed to switch network', 'error');
+                          }
+                        }}
+                        className="btn-secondary text-sm w-full"
+                      >
+                        Switch to Sepolia
+                      </button>
+                    </div>
+                  )}
+                  
                   <button
                     onClick={handleClaimFaucet}
-                    disabled={isLoading}
+                    disabled={isLoading || wallet.chainId !== 11155111}
                     className="btn-primary w-full shine-effect"
                   >
                     <Droplet size={20} />
                     {isLoading ? 'Claiming...' : 'Claim Faucet'}
                   </button>
+                  
+                  <p className="text-xs text-gray-400 mt-2">
+                    Network: {wallet.chainId === 11155111 ? 'Sepolia Testnet ✅' : `Chain ID: ${wallet.chainId} ❌`}
+                  </p>
                 </div>
 
                 <div className="glass-card p-6">

@@ -27,6 +27,21 @@ export async function connectWallet(): Promise<WalletState> {
     const signer = await provider.getSigner();
     const network = await provider.getNetwork();
 
+    // Check if we're on the correct network (Sepolia testnet)
+    const sepoliaChainId = 11155111; // Sepolia chain ID
+    if (Number(network.chainId) !== sepoliaChainId) {
+      // Automatically switch to Sepolia
+      await switchToSepoliaNetwork();
+      // Refresh network info after switch
+      const updatedNetwork = await provider.getNetwork();
+      return {
+        address: accounts[0],
+        signer,
+        chainId: Number(updatedNetwork.chainId),
+        isConnected: true,
+      };
+    }
+
     return {
       address: accounts[0],
       signer,

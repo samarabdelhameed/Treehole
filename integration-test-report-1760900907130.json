@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-10-19T19:08:27.130Z",
+  "testType": "integration",
+  "results": [
+    {
+      "timestamp": "2025-10-19T19:08:26.885Z",
+      "message": "🚀 Starting Full Integration Test",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-10-19T19:08:26.909Z",
+      "message": "🧪 Starting: Check Initial Balances",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-10-19T19:08:26.972Z",
+      "message": "✅ Completed: Check Initial Balances",
+      "data": {
+        "duration": "63ms",
+        "result": {
+          "payer": "1000.0",
+          "listener": "0.0"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-19T19:08:26.973Z",
+      "message": "🧪 Starting: Payer Claims Faucet",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-10-19T19:08:27.101Z",
+      "message": "✅ Completed: Payer Claims Faucet",
+      "data": {
+        "duration": "128ms",
+        "result": {
+          "txHash": "0xaeef5f7b6bddf331033ba742c595f7d8c5d34ce1719864bf382b9ae729eed61c",
+          "newBalance": "2000.0"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-10-19T19:08:27.102Z",
+      "message": "🧪 Starting: Approve Payment Splitter",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-10-19T19:08:27.129Z",
+      "message": "❌ Failed: Approve Payment Splitter",
+      "data": {
+        "error": "nonce has already been used (transaction={ \"data\": \"0x095ea7b30000000000000000000000002279b7a0a67db372996a5fab50d91eaa73d2ebe60000000000000000000000000000000000000000000000056bc75e2d63100000\", \"from\": \"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\", \"nonce\": \"0xa\", \"to\": \"0xa513e6e4b8f2a923d98304ec87f64353c4d5c853\" }, info={ \"error\": { \"code\": -32003, \"message\": \"nonce too low\" }, \"payload\": { \"id\": 21, \"jsonrpc\": \"2.0\", \"method\": \"eth_estimateGas\", \"params\": [ { \"data\": \"0x095ea7b30000000000000000000000002279b7a0a67db372996a5fab50d91eaa73d2ebe60000000000000000000000000000000000000000000000056bc75e2d63100000\", \"from\": \"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\", \"nonce\": \"0xa\", \"to\": \"0xa513e6e4b8f2a923d98304ec87f64353c4d5c853\" } ] } }, code=NONCE_EXPIRED, version=6.15.0)"
+      }
+    },
+    {
+      "timestamp": "2025-10-19T19:08:27.129Z",
+      "message": "💥 Integration Test Failed",
+      "data": {
+        "error": "nonce has already been used (transaction={ \"data\": \"0x095ea7b30000000000000000000000002279b7a0a67db372996a5fab50d91eaa73d2ebe60000000000000000000000000000000000000000000000056bc75e2d63100000\", \"from\": \"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\", \"nonce\": \"0xa\", \"to\": \"0xa513e6e4b8f2a923d98304ec87f64353c4d5c853\" }, info={ \"error\": { \"code\": -32003, \"message\": \"nonce too low\" }, \"payload\": { \"id\": 21, \"jsonrpc\": \"2.0\", \"method\": \"eth_estimateGas\", \"params\": [ { \"data\": \"0x095ea7b30000000000000000000000002279b7a0a67db372996a5fab50d91eaa73d2ebe60000000000000000000000000000000000000000000000056bc75e2d63100000\", \"from\": \"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\", \"nonce\": \"0xa\", \"to\": \"0xa513e6e4b8f2a923d98304ec87f64353c4d5c853\" } ] } }, code=NONCE_EXPIRED, version=6.15.0)"
+      }
+    }
+  ],
+  "summary": {
+    "totalSteps": 3,
+    "successfulSteps": 2,
+    "failedSteps": 1
+  }
+}

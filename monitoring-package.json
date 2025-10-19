@@ -1,0 +1,12 @@
+{
+  "name": "treehole-monitoring",
+  "version": "1.0.0",
+  "description": "Monitoring and testing tools for TreeHole comprehensive review",
+  "scripts": {
+    "monitor": "node monitor-events.js",
+    "test-runner": "node test-runner.js"
+  },
+  "dependencies": {
+    "ethers": "^6.15.0"
+  }
+}
