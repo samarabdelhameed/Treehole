@@ -244,3 +244,5 @@ test-*
 debug-*
 
 # ==============================================
+# Local Netlify folder
+.netlify
