@@ -1,553 +1,270 @@
-# TreeHole - Pay to Listen, Pay to Extend Time
+# 🕳️ TreeHole - Decentralized Timer & Voice Chat Platform
 
-A decentralized application (dApp) that allows users to pay for listening sessions and extend time through blockchain payments. Built for EthOnline 2025.
+A revolutionary Web3 application that combines blockchain-based payments with real-time communication, featuring a unique timer system that can be extended through cryptocurrency payments.
 
-## 🎯 Project Overview
+## 🌟 Features
 
-```mermaid
-mindmap
-  root((TreeHole))
-    Smart Contracts
-      TestToken.sol
-        ERC-20 Token
-        Faucet Function
-        Mint Capability
-      PaymentSplitter.sol
-        50/50 Split
-        ReentrancyGuard
-        SafeERC20
-    Frontend
-      React + TypeScript
-        Modern UI
-        Web3 Integration
-        MetaMask Support
-      Components
-        Countdown Timer
-        Payment Modal
-        Toast Notifications
-    Backend
-      Express.js
-        Health Check
-        Future Webhooks
-        User Preferences
-    Testing
-      Unit Tests
-        Contract Tests
-        Integration Tests
-      Manual Testing
-        Two-Account Flow
-        Payment Scenarios
-```
+### 🔗 Blockchain Integration
+- **MetaMask Wallet Connection** - Seamless Web3 wallet integration
+- **Smart Contract Interaction** - PaymentSplitter and TestToken contracts
+- **Sepolia Testnet Support** - Full testnet compatibility
+- **Token-based Payments** - THT (TreeHole Token) for timer extensions
 
-## 🚀 Features
+### ⏰ Advanced Timer System
+- **Random Duration Timer** - 10-15 minute sessions
+- **Real-time Countdown** - Live updates with visual indicators
+- **Payment Extensions** - Extend timer through blockchain payments
+- **State Management** - Running, paused, warning, and critical states
+- **Audio Notifications** - Sound alerts for state changes
 
-- **Smart Contract Integration**: Secure payment splitting using Solidity contracts
-- **Real-time Timer**: Interactive countdown with extension capabilities
-- **Web3 Wallet Integration**: MetaMask support for seamless transactions
-- **Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
-- **Test Token Faucet**: Easy token claiming for testing purposes
+### 🎤 Voice Chat System
+- **WebRTC Integration** - Peer-to-peer voice communication
+- **Audio Processing** - Real-time audio level monitoring
+- **Permission Management** - Graceful microphone access handling
+- **P2P Simulation** - Testing environment for voice features
 
-## 🏗️ Architecture
+### 💰 Payment System
+- **Automatic Token Approval** - Streamlined payment process
+- **Payment Splitting** - 50/50 split between listener and treasury
+- **Transaction Tracking** - Complete payment history
+- **Error Handling** - Comprehensive retry logic and user feedback
 
-### System Overview
+### 🎨 Modern UI/UX
+- **Glassmorphism Design** - Beautiful modern interface
+- **Responsive Layout** - Works on all devices
+- **Real-time Updates** - Live status indicators
+- **Toast Notifications** - User-friendly feedback system
+- **Loading States** - Professional loading indicators
 
-```mermaid
-graph TB
-    subgraph "Frontend Layer"
-        UI[React UI]
-        Wallet[MetaMask Wallet]
-        Web3[Web3 Integration]
-    end
-    
-    subgraph "Smart Contracts"
-        Token[TestToken.sol]
-        Splitter[PaymentSplitter.sol]
-    end
-    
-    subgraph "Backend Services"
-        API[Express.js API]
-        Health[Health Check]
-    end
-    
-    subgraph "Blockchain Network"
-        Anvil[Anvil Local]
-        Testnet[Testnet]
-        Mainnet[Mainnet]
-    end
-    
-    UI --> Wallet
-    Wallet --> Web3
-    Web3 --> Token
-    Web3 --> Splitter
-    Token --> Splitter
-    API --> Health
-    Splitter --> Anvil
-    Splitter --> Testnet
-    Splitter --> Mainnet
-```
+## 🚀 Quick Start
 
-### Smart Contracts (Foundry)
-
-- **TestToken.sol**: ERC-20 token with faucet functionality
-- **PaymentSplitter.sol**: Handles payment splitting (50% listener, 50% treasury)
-
-### Frontend (React + TypeScript)
-
-- **Web3 Integration**: Ethers.js for blockchain interactions
-- **UI Components**: Countdown timer, payment modal, toast notifications
-- **Wallet Management**: MetaMask connection and account handling
-
-### Backend (Express.js)
-
-- **Optional Server**: Basic health check endpoint
-- **Future Ready**: Prepared for webhook integrations and user preferences
-
-## 📋 Prerequisites
-
-- Node.js (v18+)
-- Foundry (for smart contracts)
+### Prerequisites
+- Node.js 18+ and npm
 - MetaMask browser extension
 - Git
 
-## 🛠️ Installation & Setup
+### Installation
 
-### 1. Clone the Repository
-
+1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd Treehole
+git clone https://github.com/yourusername/treehole.git
+cd treehole
 ```
 
-### 2. Smart Contracts Setup
-
+2. **Install dependencies**
 ```bash
-cd contracts
-forge install
-forge build
-forge test
-```
-
-### 3. Frontend Setup
-
-```bash
+# Install frontend dependencies
 cd frontend
 npm install
-npm run build
-```
 
-### 4. Backend Setup (Optional)
-
-```bash
-cd backend
+# Install contract dependencies
+cd ../contracts
 npm install
-npm start
 ```
 
-## 🚀 Running the Application
-
-### Local Development
-
-1. **Start Anvil (Local Blockchain)**
-
+3. **Environment Setup**
 ```bash
-anvil --port 8545
+# Copy environment examples
+cp .env.example .env
+cp contracts/.env.example contracts/.env
+cp frontend/.env.example frontend/.env
+
+# Edit .env files with your configuration
 ```
 
-2. **Deploy Contracts**
-
+4. **Deploy Contracts (Optional)**
 ```bash
 cd contracts
-forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+npm run deploy:sepolia
 ```
 
-3. **Start Frontend**
-
+5. **Start Development Server**
 ```bash
 cd frontend
 npm run dev
 ```
 
-4. **Access Application**
-   Open http://localhost:5173 in your browser
+6. **Open Application**
+Navigate to `http://localhost:3000`
 
-### Production Deployment
+## 🔧 Configuration
 
-1. **Deploy to Testnet**
+### Environment Variables
 
-```bash
-cd contracts
-forge script script/Deploy.s.sol --rpc-url <testnet-rpc-url> --broadcast --verify
+#### Contracts (.env)
+```env
+SEPOLIA_RPC_URL=your_alchemy_or_infura_url
+PRIVATE_KEY=your_wallet_private_key
+ETHERSCAN_API_KEY=your_etherscan_api_key
 ```
 
-2. **Update Contract Addresses**
-   Update addresses in `frontend/src/web3/contracts.ts`
+#### Frontend (.env)
+```env
+VITE_CONTRACT_ADDRESS_PAYMENT_SPLITTER=deployed_contract_address
+VITE_CONTRACT_ADDRESS_TEST_TOKEN=deployed_token_address
+VITE_NETWORK_CHAIN_ID=11155111
+```
 
-3. **Build and Deploy Frontend**
+### Smart Contracts
 
+The project uses two main contracts:
+
+1. **PaymentSplitter** - Handles payment processing and splitting
+2. **TestToken** - ERC20 token for payments (THT)
+
+Contract addresses are configured for Sepolia testnet by default.
+
+## 📱 Usage
+
+### 1. Connect Wallet
+- Click "Connect Wallet" button
+- Approve MetaMask connection
+- Ensure you're on Sepolia testnet
+
+### 2. Get Test Tokens
+- Click "Claim Tokens" to get THT tokens
+- Tokens are required for timer extensions
+
+### 3. Start Timer
+- Click "Start Timer" to begin session
+- Timer runs for 10-15 minutes randomly
+
+### 4. Extend Timer
+- Click "Extend Timer" when running low
+- Choose extension duration (1-60 minutes)
+- Approve token spending and payment
+
+### 5. Voice Chat (Optional)
+- Click "Start Voice Chat" to test voice features
+- Allow microphone access when prompted
+
+## 🏗️ Architecture
+
+### Frontend Stack
+- **Framework**: Vanilla JavaScript (ES6+)
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS + Custom CSS
+- **Web3**: Ethers.js v6
+- **State Management**: Custom EventBus + StateManager
+
+### Smart Contracts
+- **Framework**: Foundry
+- **Language**: Solidity ^0.8.19
+- **Network**: Sepolia Testnet
+- **Standards**: ERC20, OpenZeppelin
+
+### Key Components
+
+#### Frontend
+- `App.js` - Main application controller
+- `Timer.js` - Timer logic and state management
+- `Payment.js` - Payment processing
+- `WalletManager.js` - Web3 wallet integration
+- `ContractsManager.js` - Smart contract interactions
+- `VoiceChat.js` - Audio/voice functionality
+- `EventBus.js` - Event system
+- `StateManager.js` - Application state
+
+#### Smart Contracts
+- `PaymentSplitter.sol` - Payment processing and splitting
+- `TestToken.sol` - ERC20 token implementation
+
+## 🧪 Testing
+
+### Frontend Testing
+```bash
+cd frontend
+npm run test
+```
+
+### Contract Testing
+```bash
+cd contracts
+forge test
+```
+
+### Manual Testing
+1. Connect wallet and claim tokens
+2. Start timer and let it run
+3. Extend timer through payment
+4. Test voice chat functionality
+5. Verify all error scenarios
+
+## 🚀 Deployment
+
+### Frontend Deployment
 ```bash
 cd frontend
 npm run build
 # Deploy dist/ folder to your hosting service
 ```
 
-## 🧪 Testing
-
-### Smart Contract Tests
-
+### Contract Deployment
 ```bash
 cd contracts
-forge test -vv
+npm run deploy:mainnet  # For production
+npm run deploy:sepolia  # For testing
 ```
 
-### Integration Testing
+## 🔒 Security
 
-```bash
-# Start Anvil
-anvil --port 8545
+### Best Practices Implemented
+- Input validation for all user inputs
+- Safe contract interactions with proper error handling
+- Secure token handling and approval patterns
+- Protection against common Web3 vulnerabilities
+- Environment variable protection
 
-# Deploy contracts
-forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
-
-# Test with cast commands
-cast call <token-address> "name()" --rpc-url http://localhost:8545
-cast send <token-address> "claimFaucet()" --private-key <private-key> --rpc-url http://localhost:8545
-```
-
-## 📱 User Guide
-
-### Getting Started
-
-1. **Connect Wallet**: Click "Connect Wallet" and approve MetaMask connection
-2. **Claim Tokens**: Use the faucet to get 1000 THT test tokens
-3. **Start Timer**: Begin your listening session
-4. **Extend Time**: Pay tokens to extend the session for another user
-
-### Payment Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User (Payer)
-    participant W as Wallet (MetaMask)
-    participant F as Frontend
-    participant T as TestToken Contract
-    participant P as PaymentSplitter Contract
-    participant L as Listener
-    participant Tr as Treasury
-    
-    U->>F: Enter listener address & minutes
-    F->>U: Show total cost
-    U->>F: Confirm payment
-    F->>W: Request approval
-    W->>T: Approve tokens
-    T-->>F: Approval confirmed
-    F->>W: Request payment
-    W->>P: Execute payAndSplit
-    P->>T: Transfer tokens from user
-    P->>L: Send 50% to listener
-    P->>Tr: Send 50% to treasury
-    P-->>F: PaymentProcessed event
-    F->>U: Timer extended successfully
-```
-
-### Payment Steps
-1. Enter listener address
-2. Set extension minutes (use +/- buttons)
-3. Review total cost
-4. Confirm payment (2 transactions: approve + pay)
-5. Timer extends automatically
-
-## 🔧 Configuration
-
-### Contract Addresses
-
-Update in `frontend/src/web3/contracts.ts`:
-
-```typescript
-export const CONTRACT_ADDRESSES = {
-  testToken: "0x...",
-  paymentSplitter: "0x...",
-};
-```
-
-### Network Configuration
-
-Add network details in `contracts/foundry.toml`:
-
-```toml
-[rpc_endpoints]
-sepolia = "https://sepolia.infura.io/v3/YOUR_KEY"
-```
-
-## 🛡️ Security Features
-
-### Security Architecture
-
-```mermaid
-graph TB
-    subgraph "Security Layers"
-        A[Input Validation]
-        B[ReentrancyGuard]
-        C[SafeERC20]
-        D[Event Logging]
-    end
-    
-    subgraph "Attack Prevention"
-        E[Reentrancy Attacks]
-        F[Integer Overflow]
-        G[Unauthorized Access]
-        H[Front-running]
-    end
-    
-    subgraph "Monitoring"
-        I[Transaction Events]
-        J[Error Tracking]
-        K[Gas Optimization]
-        L[Audit Trail]
-    end
-    
-    A --> E
-    B --> E
-    C --> F
-    A --> G
-    D --> H
-    D --> I
-    A --> J
-    C --> K
-    D --> L
-    
-    style A fill:#FFE4B5
-    style B fill:#FFE4B5
-    style C fill:#FFE4B5
-    style D fill:#FFE4B5
-```
-
-### Security Measures
-- **ReentrancyGuard**: Prevents reentrancy attacks
-- **SafeERC20**: Secure token transfers
-- **Input Validation**: Comprehensive parameter checking
-- **Event Logging**: Transparent transaction tracking
-
-## 📊 Smart Contract Details
-
-### Contract Architecture
-
-```mermaid
-graph LR
-    subgraph "User Actions"
-        A[Connect Wallet]
-        B[Claim Faucet]
-        C[Start Timer]
-        D[Pay to Extend]
-    end
-    
-    subgraph "Smart Contracts"
-        E[TestToken.sol]
-        F[PaymentSplitter.sol]
-    end
-    
-    subgraph "Payment Flow"
-        G[Approve Tokens]
-        H[Execute Payment]
-        I[Split 50/50]
-        J[Emit Event]
-    end
-    
-    subgraph "Recipients"
-        K[Listener]
-        L[Treasury]
-    end
-    
-    A --> E
-    B --> E
-    C --> D
-    D --> G
-    G --> H
-    H --> F
-    F --> I
-    I --> K
-    I --> L
-    F --> J
-```
-
-### TestToken Contract
-
-- **Name**: TreeHole Token
-- **Symbol**: THT
-- **Decimals**: 18
-- **Faucet Amount**: 1000 THT
-- **Functions**: `claimFaucet()`, `mint()`, standard ERC-20
-
-### PaymentSplitter Contract
-
-- **Split Ratio**: 50% listener, 50% treasury
-- **Security**: ReentrancyGuard protection
-- **Events**: PaymentProcessed with full details
-- **Functions**: `payAndSplit(token, listener, amount, time)`
-
-## 🎯 Two-Account Testing
-
-To test the complete flow with two users:
-
-1. **User A (Payer)**:
-
-   - Connect wallet
-   - Claim faucet tokens
-   - Start timer
-   - Pay to extend for User B
-
-2. **User B (Listener)**:
-   - Connect different wallet
-   - Receive payment notification
-   - Timer extends automatically
-
-## 🚀 Production Checklist
-
-### Development Workflow
-
-```mermaid
-flowchart TD
-    A[Clone Repository] --> B[Install Dependencies]
-    B --> C[Run Tests]
-    C --> D{Tests Pass?}
-    D -->|No| E[Fix Issues]
-    E --> C
-    D -->|Yes| F[Start Anvil]
-    F --> G[Deploy Contracts]
-    G --> H[Start Frontend]
-    H --> I[Test Integration]
-    I --> J{All Working?}
-    J -->|No| K[Debug & Fix]
-    K --> I
-    J -->|Yes| L[Production Ready!]
-    
-    style L fill:#90EE90
-    style D fill:#FFE4B5
-    style J fill:#FFE4B5
-```
-
-- [x] Smart contracts tested and audited
-- [x] Frontend builds successfully
-- [x] Web3 integration working
-- [x] Payment flow tested
-- [x] Error handling implemented
-- [x] Responsive design
-- [x] Security measures in place
-- [x] Documentation complete
-
-## 📈 Future Enhancements
-
-### Technology Roadmap
-
-```mermaid
-timeline
-    title TreeHole Development Timeline
-    
-    section Phase 1 ✅
-        Smart Contracts    : PaymentSplitter
-                           : TestToken
-                           : Security Features
-    
-    section Phase 2 ✅
-        Frontend          : React UI
-                           : Web3 Integration
-                           : MetaMask Support
-    
-    section Phase 3 🔄
-        Real-time Events  : WebSocket Integration
-                           : Live Updates
-                           : Event Streaming
-    
-    section Phase 4 📋
-        User Profiles     : Persistent Preferences
-                           : Payment History
-                           : Analytics Dashboard
-    
-    section Phase 5 🚀
-        Multi-token       : ERC-20 Support
-                           : Mobile App
-                           : Advanced Features
-```
-
-### Planned Features
-- **Real-time Events**: WebSocket integration for live updates
-- **User Profiles**: Persistent user preferences
-- **Payment History**: Transaction history tracking
-- **Multi-token Support**: Support for different ERC-20 tokens
-- **Mobile App**: React Native version
-- **Analytics Dashboard**: Usage statistics and insights
+### Security Considerations
+- Never commit private keys or sensitive data
+- Always verify contract addresses before deployment
+- Test thoroughly on testnets before mainnet deployment
+- Use hardware wallets for production deployments
 
 ## 🤝 Contributing
 
-### Contribution Workflow
-
-```mermaid
-gitgraph
-    commit id: "Initial Commit"
-    branch develop
-    checkout develop
-    commit id: "Add Feature A"
-    commit id: "Add Feature B"
-    checkout main
-    merge develop
-    commit id: "Release v1.0"
-    branch feature/new-feature
-    checkout feature/new-feature
-    commit id: "Work on Feature"
-    commit id: "Fix Bug"
-    checkout main
-    merge feature/new-feature
-    commit id: "Release v1.1"
-```
-
-### How to Contribute
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow existing code style and patterns
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-For issues and questions:
+- OpenZeppelin for secure smart contract libraries
+- Ethers.js for Web3 integration
+- Vite for fast development experience
+- Tailwind CSS for styling system
+- Foundry for smart contract development
 
-- Create an issue on GitHub
-- Check the documentation
-- Review the test files for examples
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/treehole/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/treehole/discussions)
+- **Email**: support@treehole.app
+
+## 🗺️ Roadmap
+
+- [ ] Mainnet deployment
+- [ ] Real P2P voice chat implementation
+- [ ] Mobile app development
+- [ ] Additional payment tokens support
+- [ ] Advanced timer customization
+- [ ] User profiles and history
+- [ ] Multi-language support
 
 ---
 
-**Built with ❤️ for EthOnline 2025**
+**Built with ❤️ by the TreeHole Team**
 
-_Pay to Listen. Pay to Extend Time._
-
-## 📊 Project Status
-
-```mermaid
-pie title Project Completion Status
-    "Completed Features" : 85
-    "Testing & Documentation" : 10
-    "Future Enhancements" : 5
-```
-
-### ✅ Completed
-- Smart Contracts (PaymentSplitter, TestToken)
-- Frontend (React + TypeScript + Web3)
-- Backend (Express.js)
-- Testing (Unit + Integration)
-- Documentation (README + Contributing)
-- Security (ReentrancyGuard + SafeERC20)
-- Deployment Scripts
-
-### 🔄 In Progress
-- Real-time event streaming
-- Advanced analytics
-
-### 📋 Planned
-- Mobile application
-- Multi-token support
-- User profiles
-- Payment history
+*Connecting people through blockchain technology and real-time communication.*

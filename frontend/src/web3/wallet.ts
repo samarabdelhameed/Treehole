@@ -70,7 +70,7 @@ export async function switchToSepoliaNetwork(): Promise<void> {
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: '0xaa36a7' }],
+      params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID in hex
     });
   } catch (error: any) {
     if (error.code === 4902) {
