@@ -129,9 +129,9 @@ export function getPeerDetails(libp2p) {
     .join("");
 }
 export function update(element, newContent) {
-  if (element.innerHTML !== newContent) {
-    element.innerHTML = newContent;
-  }
+//  if (element.innerHTML !== newContent) {
+//    element.innerHTML = newContent;
+//  }
 }
 
 export async function createNewLibp2p() {
