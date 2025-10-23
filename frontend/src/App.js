@@ -17,7 +17,7 @@ import { enable, disable } from "@libp2p/logger";
 import { PUBSUB_AUDIO } from "./utils/constants.js";
 import { update, getPeerTypes, getAddresses, getPeerDetails } from "./utils/streaming_utils.js";
 import { createNewLibp2p } from "./utils/streaming_utils.js";
-import { peerApp, setSourceBuffer, setBufferReady } from './peerApp.js';
+import { peerApp, setSourceBuffer, setBufferReady, startStreaming} from './peerApp.js';
 let sourceBuffer = null;
   let queue = [];
   let isBufferReady = false;
@@ -862,6 +862,9 @@ setSourceBuffer(sourceBuffer); // to listening peer
 
   async handleStartVoiceChat() {
     try {
+      startStreaming().catch((e) => {
+        console.error("Error in startStreaming:", e);
+      });
       await this.voiceChatManager.initializeAudio();
       
       // Test P2P connection simulation

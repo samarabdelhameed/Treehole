@@ -12,12 +12,81 @@ export const setSourceBuffer = (buffer) => {
   console.log("SourceBuffer set in peerApp"); 
 };
 
+export const setMediaSource = (mediaSource) => {
+  mediaSource.addEventListener("sourceopen", () => {
+    const mime = 'audio/webm; codecs="opus"';
+    sourceBuffer = mediaSource.addSourceBuffer(mime);
+    console.log("SourceBuffer created with MIME type:", mime);
+    setSourceBuffer(sourceBuffer);
+  });
+}
+
 export const setBufferReady = (ready) => {
   isBufferReady = ready;
 }
+
+export async function startStreaming() {
+    libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
+    libp2p.services.pubsub.addEventListener("message", (evt) => {
+      if (evt.detail.topic !== "browser-peer-discovery") {
+        console.log("sender  audio chunk to", evt.detail);
+        // evt.detail.data is a Uint8Array of the audio chunk
+      }
+    });
+
+    setInterval(() => {
+      const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO)
+        .map(peerId => {
+          const el = document.createElement('li')
+          el.textContent = peerId.toString()
+          return el
+        })
+
+      console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
+    }, 1000);
+
+    const mime = 'audio/webm; codecs="opus"';
+if (!MediaSource.isTypeSupported(mime)) {
+  console.error("MIME type not supported:", mime);
+  return;
+}
+
+    console.log("start streaming");
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream, {
+      mimeType: "audio/webm;codecs=opus",
+      audioBitsPerSecond: 64000, // adjust quality (32k–128k typical)
+    });
+
+    recorder.ondataavailable = async (e) => {
+      if (e.data.size > 0 && libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
+        // Publish audio chunk to PUBSUB_AUDIO topic
+        if (e.data.size === 0) return;
+
+        const arrayBuffer = await e.data.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuffer);
+
+        if (libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
+          try {
+            await libp2p.services.pubsub.publish(PUBSUB_AUDIO, uint8);
+         //   console.log("Published audio chunk", uint8.byteLength);
+         // tracking
+          } catch (err) {
+            console.error("Error publishing audio chunk:", err);
+          }
+        }
+      }
+    };
+
+    recorder.start(250); // send small chunks every 250ms
+    console.log("Streaming microphone via WebSocket...");
+  };
+let libp2p = null;
+
+
 export const peerApp = async () => {
 console.log("Starting peerApp...");
-  const libp2p = await createNewLibp2p();
+  libp2p = await createNewLibp2p();
 
   let queue = [];
 
@@ -120,62 +189,7 @@ console.log("Starting peerApp...");
     console.log("🎙️ Recording stopped and stream closed");
   };
   */
-  DOM.startstreaming().onclick = async (e) => {
-    libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
-    libp2p.services.pubsub.addEventListener("message", (evt) => {
-      if (evt.detail.topic !== "browser-peer-discovery") {
-        console.log("sender  audio chunk to", evt.detail);
-        // evt.detail.data is a Uint8Array of the audio chunk
-      }
-    });
 
-    setInterval(() => {
-      const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO)
-        .map(peerId => {
-          const el = document.createElement('li')
-          el.textContent = peerId.toString()
-          return el
-        })
-
-      console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
-    }, 1000);
-
-    const mime = 'audio/webm; codecs="opus"';
-if (!MediaSource.isTypeSupported(mime)) {
-  console.error("MIME type not supported:", mime);
-  return;
-}
-
-    console.log("start streaming");
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm;codecs=opus",
-      audioBitsPerSecond: 64000, // adjust quality (32k–128k typical)
-    });
-
-    recorder.ondataavailable = async (e) => {
-      if (e.data.size > 0 && libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
-        // Publish audio chunk to PUBSUB_AUDIO topic
-        if (e.data.size === 0) return;
-
-        const arrayBuffer = await e.data.arrayBuffer();
-        const uint8 = new Uint8Array(arrayBuffer);
-
-        if (libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
-          try {
-            await libp2p.services.pubsub.publish(PUBSUB_AUDIO, uint8);
-         //   console.log("Published audio chunk", uint8.byteLength);
-         // tracking
-          } catch (err) {
-            console.error("Error publishing audio chunk:", err);
-          }
-        }
-      }
-    };
-
-    recorder.start(250); // send small chunks every 250ms
-    console.log("Streaming microphone via WebSocket...");
-  };
 
   DOM.loggingButtonEnable().onclick = (e) => {
     enable("*,*:debug");
@@ -195,5 +209,13 @@ if (!MediaSource.isTypeSupported(mime)) {
       console.log(e);
     }
   };
+  return libp2p;
 };
+
+export async function getLibp2pInstance() {
+  if (!libp2p) {
+    libp2p = await peerApp()
+  }
+  return libp2p;
+}
 
