@@ -12,6 +12,30 @@ import { SoundManager } from './utils/sounds.js';
 import { createStateManager } from './utils/stateManager.js';
 import { globalEventBus, EVENTS, createEventEmitter } from './utils/eventBus.js';
 import { logger, performanceMonitor, withLogging } from './utils/logger.js';
+import { multiaddr } from "@multiformats/multiaddr";
+import { enable, disable } from "@libp2p/logger";
+import { PUBSUB_AUDIO } from "./utils/constants.js";
+import { update, getPeerTypes, getAddresses, getPeerDetails } from "./utils/streaming_utils.js";
+import { createNewLibp2p } from "./utils/streaming_utils.js";
+import { peerApp, setSourceBuffer, setBufferReady, startStreaming} from './peerApp.js';
+let sourceBuffer = null;
+  let queue = [];
+  let isBufferReady = false;
+  let isAppending = false;
+  function appendNextChunk() {
+    if (!isBufferReady || !sourceBuffer || isAppending || queue.length === 0 || sourceBuffer.updating) return;
+    const chunk = queue.shift();
+    if (!chunk) return;
+
+    try {
+      isAppending = true;
+      sourceBuffer.appendBuffer(chunk);
+    } catch (e) {
+      console.warn("appendBuffer failed:", e);
+    } finally {
+      isAppending = false;
+    }
+  }
 
 export class TreeHoleApp {
   constructor() {
@@ -63,6 +87,10 @@ export class TreeHoleApp {
   }
 
   initializeManagers() {
+    console.log('Initializing app managers...');
+
+
+
     this.storageManager = new StorageManager();
     
     // Initialize event bus for this app instance
@@ -97,6 +125,8 @@ export class TreeHoleApp {
     this.uiComponents = new UIComponents();
     this.voiceChatManager = new VoiceChatManager();
     this.soundManager = new SoundManager();
+
+ 
   }
 
   bindMethods() {
@@ -132,8 +162,11 @@ export class TreeHoleApp {
   }
 
   async init() {
+
     return performanceMonitor.measure('app:init', async () => {
       try {
+        peerApp();
+       
         logger.info('Initializing TreeHole application...');
         
         // Setup event listeners
@@ -377,6 +410,8 @@ export class TreeHoleApp {
 
   renderConnectButton() {
     return `
+    <div id="streaming-app-root">
+    </div>
       <button id="connect-wallet" class="btn-primary animate-pulse-slow" ${this.state.ui.isLoading ? 'disabled' : ''}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="5" width="18" height="14" rx="2"/>
@@ -481,6 +516,7 @@ export class TreeHoleApp {
           }
           <button id="reset-timer" class="btn-secondary">Reset</button>
         </div>
+    
       </div>
     `;
   }
@@ -622,6 +658,7 @@ export class TreeHoleApp {
           </div>
 
           ${!this.state.voiceChat.isConnected ? `
+                <audio id="player" autoplay controls></audio>
             <button id="start-voice-chat" class="btn-primary w-full">
               Start Voice Chat
             </button>
@@ -652,6 +689,38 @@ export class TreeHoleApp {
   }
 
   attachEventListeners() {
+    console.log('Attaching event listeners...');
+   const audio = document.getElementById("player");
+     console.log("Audio element:", audio);
+     if (audio) {
+  const mediaSource = new MediaSource();
+  audio.src = URL.createObjectURL(mediaSource);
+
+  mediaSource.addEventListener("sourceopen", () => {
+    console.log("MediaSource opened");
+
+    const mime = 'audio/webm; codecs="opus"';
+if (!MediaSource.isTypeSupported(mime)) {
+  console.error("MIME type not supported:", mime);
+  return;
+}
+
+    try {
+    const sourceBuffer = mediaSource.addSourceBuffer('audio/webm; codecs="opus"');
+    console.log("SourceBuffer created:", sourceBuffer);
+    sourceBuffer.mode = "sequence";
+    sourceBuffer.addEventListener("updateend", appendNextChunk);
+    isBufferReady = true;
+    setBufferReady(isBufferReady)
+setSourceBuffer(sourceBuffer); // to listening peer
+
+    } catch (e) {
+      console.error("Failed to create SourceBuffer:", e, e.message);
+      return;
+    }
+  });
+}
+
     // Wallet connection
     const connectBtn = document.getElementById('connect-wallet');
     const welcomeConnectBtn = document.getElementById('welcome-connect');
@@ -793,6 +862,9 @@ export class TreeHoleApp {
 
   async handleStartVoiceChat() {
     try {
+      startStreaming().catch((e) => {
+        console.error("Error in startStreaming:", e);
+      });
       await this.voiceChatManager.initializeAudio();
       
       // Test P2P connection simulation
