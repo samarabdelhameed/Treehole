@@ -9,7 +9,7 @@ let sourceBuffer = null;
   let isBufferReady = false;
 export const setSourceBuffer = (buffer) => {
   sourceBuffer = buffer;
-  console.log("SourceBuffer set in peerApp"); 
+  // SourceBuffer set successfully 
 };
 
 export const setMediaSource = (mediaSource) => {
@@ -42,8 +42,16 @@ export async function startStreaming() {
           return el
         })
 
-      console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
-    }, 1000);
+      // Only log if peer count changed or every 30 seconds
+      const now = Date.now();
+      if (!window.lastPeerLog1 || 
+          window.lastPeerCount1 !== peerList.length || 
+          now - window.lastPeerLog1 > 30000) {
+        console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList);
+        window.lastPeerCount1 = peerList.length;
+        window.lastPeerLog1 = now;
+      }
+    }, 5000); // Reduced frequency
 
     const mime = 'audio/webm; codecs="opus"';
 if (!MediaSource.isTypeSupported(mime)) {
@@ -135,7 +143,15 @@ console.log("Starting peerApp...");
         return el
       })
 
-    console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
+    // Only log if peer count changed or every 30 seconds
+    const now = Date.now();
+    if (!window.lastPeerLog2 || 
+        window.lastPeerCount2 !== peerList.length || 
+        now - window.lastPeerLog2 > 30000) {
+      console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList);
+      window.lastPeerCount2 = peerList.length;
+      window.lastPeerLog2 = now;
+    }
     //   libp2p.services.pubsub
     //   .publish(PUBSUB_AUDIO, fromString("Bird bird bird, bird is the word!"))
     //  .catch((err) => {
@@ -191,26 +207,45 @@ console.log("Starting peerApp...");
   */
 
 
-  DOM.loggingButtonEnable().onclick = (e) => {
-    enable("*,*:debug");
-  };
-  DOM.loggingButtonDisable().onclick = (e) => {
-    disable();
-  };
+  // Check if DOM elements exist before attaching events
+  const loggingEnableBtn = DOM.loggingButtonEnable();
+  const loggingDisableBtn = DOM.loggingButtonDisable();
+  
+  if (loggingEnableBtn) {
+    loggingEnableBtn.onclick = (e) => {
+      enable("*,*:debug");
+    };
+  }
+  
+  if (loggingDisableBtn) {
+    loggingDisableBtn.onclick = (e) => {
+      disable();
+    };
+  }
 
-  DOM.connectButton().onclick = async (e) => {
-    e.preventDefault();
-    let maddr = multiaddr(DOM.inputMultiaddr().value);
+  // Check if connect button exists before attaching event
+  const connectBtn = DOM.connectButton();
+  if (connectBtn) {
+    connectBtn.onclick = async (e) => {
+      e.preventDefault();
+      const inputElement = DOM.inputMultiaddr();
+      if (!inputElement) return;
+      
+      let maddr = multiaddr(inputElement.value);
 
-    console.log(maddr);
-    try {
-      await libp2p.dial(maddr);
-    } catch (e) {
-      console.log(e);
+      console.log(maddr);
+        try {
+          await libp2p.dial(maddr);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+    } else {
+      console.warn('Connect button not found in DOM');
     }
-  };
+  
   return libp2p;
-};
+}
 
 export async function getLibp2pInstance() {
   if (!libp2p) {

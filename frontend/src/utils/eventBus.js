@@ -37,7 +37,7 @@ export class EventBus {
     // Sort by priority (higher priority first)
     listeners.sort((a, b) => b.priority - a.priority);
 
-    if (this.debugMode) {
+    if (this.debugMode && this.shouldLogEventListener(eventName)) {
       console.log(`📡 Event listener added: ${eventName}`, { listener, totalListeners: listeners.length });
     }
 
@@ -65,13 +65,13 @@ export class EventBus {
     if (!this.events.has(eventName)) return;
 
     const listeners = this.events.get(eventName);
-    const index = listeners.findIndex(listener => 
+    const index = listeners.findIndex(listener =>
       listener.id === callbackOrId || listener.callback === callbackOrId
     );
 
     if (index !== -1) {
       listeners.splice(index, 1);
-      
+
       if (this.debugMode) {
         console.log(`📡 Event listener removed: ${eventName}`, { remainingListeners: listeners.length });
       }
@@ -91,7 +91,7 @@ export class EventBus {
    */
   emit(eventName, data = null, options = {}) {
     const startTime = performance.now();
-    
+
     if (!this.events.has(eventName)) {
       // Only log missing listeners for important events to reduce noise
       const importantEvents = ['wallet:connected', 'payment:success', 'timer:ended'];
@@ -108,7 +108,7 @@ export class EventBus {
     for (const listener of listeners) {
       try {
         let result;
-        
+
         if (listener.context) {
           result = listener.callback.call(listener.context, data, eventName);
         } else {
@@ -130,7 +130,7 @@ export class EventBus {
 
       } catch (error) {
         console.error(`Error in event listener for '${eventName}':`, error);
-        
+
         if (options.throwOnError) {
           throw error;
         }
@@ -154,7 +154,7 @@ export class EventBus {
       // Reduce noise from frequent timer events
       const isTimerTick = eventName === 'timer:tick';
       const shouldLog = !isTimerTick || (isTimerTick && data % 30 === 0); // Only log every 30 seconds for timer ticks
-      
+
       if (shouldLog) {
         console.log(`📡 Event emitted: ${eventName}`, {
           data,
@@ -183,7 +183,7 @@ export class EventBus {
     for (const listener of listeners) {
       try {
         let result;
-        
+
         if (listener.context) {
           result = await listener.callback.call(listener.context, data, eventName);
         } else {
@@ -202,7 +202,7 @@ export class EventBus {
 
       } catch (error) {
         console.error(`Error in async event listener for '${eventName}':`, error);
-        
+
         if (options.throwOnError) {
           throw error;
         }
@@ -250,7 +250,7 @@ export class EventBus {
    */
   addToHistory(eventData) {
     this.eventHistory.push(eventData);
-    
+
     if (this.eventHistory.length > this.maxHistorySize) {
       this.eventHistory.shift();
     }
@@ -301,21 +301,44 @@ export class EventBus {
    */
   createNamespace(namespace) {
     return {
-      on: (eventName, callback, options) => 
+      on: (eventName, callback, options) =>
         this.on(`${namespace}:${eventName}`, callback, options),
-      
-      once: (eventName, callback, options) => 
+
+      once: (eventName, callback, options) =>
         this.once(`${namespace}:${eventName}`, callback, options),
-      
-      off: (eventName, callbackOrId) => 
+
+      off: (eventName, callbackOrId) =>
         this.off(`${namespace}:${eventName}`, callbackOrId),
-      
-      emit: (eventName, data, options) => 
+
+      emit: (eventName, data, options) =>
         this.emit(`${namespace}:${eventName}`, data, options),
-      
-      emitAsync: (eventName, data, options) => 
+
+      emitAsync: (eventName, data, options) =>
         this.emitAsync(`${namespace}:${eventName}`, data, options)
     };
+  }
+
+  /**
+   * Determine if event listener should be logged
+   * @param {string} eventName - Event name
+   * @returns {boolean}
+   */
+  shouldLogEventListener(eventName) {
+    // Only log important event listeners, skip common ones
+    const skipEvents = [
+      'wallet:accountChanged',
+      'wallet:networkChanged',
+      'timer:tick',
+      'ui:update',
+      'payment:failed',
+      'voiceChat:connected',
+      'voiceChat:disconnected',
+      'contract:tokenBalanceUpdated',
+      'ui:loadingStart',
+      'ui:loadingEnd'
+    ];
+
+    return !skipEvents.includes(eventName);
   }
 }
 
@@ -329,7 +352,7 @@ export const EVENTS = {
   WALLET_DISCONNECTED: 'wallet:disconnected',
   WALLET_ACCOUNT_CHANGED: 'wallet:accountChanged',
   WALLET_NETWORK_CHANGED: 'wallet:networkChanged',
-  
+
   // Timer events
   TIMER_STARTED: 'timer:started',
   TIMER_PAUSED: 'timer:paused',
@@ -337,13 +360,13 @@ export const EVENTS = {
   TIMER_TICK: 'timer:tick',
   TIMER_ENDED: 'timer:ended',
   TIMER_EXTENDED: 'timer:extended',
-  
+
   // Payment events
   PAYMENT_INITIATED: 'payment:initiated',
   PAYMENT_SUCCESS: 'payment:success',
   PAYMENT_FAILED: 'payment:failed',
   PAYMENT_APPROVED: 'payment:approved',
-  
+
   // Voice chat events
   VOICE_CHAT_STARTED: 'voiceChat:started',
   VOICE_CHAT_ENDED: 'voiceChat:ended',
@@ -351,19 +374,19 @@ export const EVENTS = {
   VOICE_CHAT_DISCONNECTED: 'voiceChat:disconnected',
   VOICE_CHAT_MUTED: 'voiceChat:muted',
   VOICE_CHAT_UNMUTED: 'voiceChat:unmuted',
-  
+
   // UI events
   UI_LOADING_START: 'ui:loadingStart',
   UI_LOADING_END: 'ui:loadingEnd',
   UI_TOAST_SHOW: 'ui:toastShow',
   UI_MODAL_OPEN: 'ui:modalOpen',
   UI_MODAL_CLOSE: 'ui:modalClose',
-  
+
   // App events
   APP_INITIALIZED: 'app:initialized',
   APP_ERROR: 'app:error',
   APP_STATE_CHANGED: 'app:stateChanged',
-  
+
   // Contract events
   CONTRACT_INITIALIZED: 'contract:initialized',
   CONTRACT_ERROR: 'contract:error',
@@ -393,7 +416,7 @@ export const waitForEvent = (eventName, timeout = 5000) => {
 
 export const debounceEvent = (eventName, delay = 300) => {
   let timeoutId;
-  
+
   return (data) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
@@ -404,7 +427,7 @@ export const debounceEvent = (eventName, delay = 300) => {
 
 export const throttleEvent = (eventName, limit = 100) => {
   let inThrottle;
-  
+
   return (data) => {
     if (!inThrottle) {
       globalEventBus.emit(eventName, data);

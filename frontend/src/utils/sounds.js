@@ -82,6 +82,12 @@ export class SoundManager {
 
   playWebAudioSound(config) {
     try {
+      // Resume AudioContext if suspended
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume().catch(console.warn);
+        return; // Skip this play attempt
+      }
+      
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
 

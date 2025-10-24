@@ -32,6 +32,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Hidden audio element for P2P streaming -->
+    <audio id="player" style="display: none;" autoplay controls></audio>
     <script>
       // Polyfill for simple-peer compatibility
       if (typeof global === 'undefined') {

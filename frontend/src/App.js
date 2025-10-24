@@ -689,15 +689,15 @@ export class TreeHoleApp {
   }
 
   attachEventListeners() {
-    console.log('Attaching event listeners...');
+    // Silently attach event listeners
    const audio = document.getElementById("player");
-     console.log("Audio element:", audio);
+     // Audio element found
      if (audio) {
   const mediaSource = new MediaSource();
   audio.src = URL.createObjectURL(mediaSource);
 
   mediaSource.addEventListener("sourceopen", () => {
-    console.log("MediaSource opened");
+    // MediaSource opened successfully
 
     const mime = 'audio/webm; codecs="opus"';
 if (!MediaSource.isTypeSupported(mime)) {
@@ -707,7 +707,7 @@ if (!MediaSource.isTypeSupported(mime)) {
 
     try {
     const sourceBuffer = mediaSource.addSourceBuffer('audio/webm; codecs="opus"');
-    console.log("SourceBuffer created:", sourceBuffer);
+    // SourceBuffer created successfully
     sourceBuffer.mode = "sequence";
     sourceBuffer.addEventListener("updateend", appendNextChunk);
     isBufferReady = true;
@@ -979,7 +979,7 @@ setSourceBuffer(sourceBuffer); // to listening peer
 
   // Lifecycle methods
   handleAppHidden() {
-    console.log('App hidden - pausing non-essential operations');
+    // Silently pause non-essential operations
     // Pause timer if running to save battery
     if (this.state.timer.isRunning) {
       this.timerComponent.pause();
@@ -987,7 +987,7 @@ setSourceBuffer(sourceBuffer); // to listening peer
   }
 
   handleAppVisible() {
-    console.log('App visible - resuming operations');
+    // Silently resume operations
     
     // Debounce rapid visibility changes
     if (this.visibilityTimeout) {

@@ -212,8 +212,13 @@ console.log("relay multiaddr:", relayAddr);
     );
     try {
       await libp2p.dial(maddrs); // dial the new peer
+      console.log(`Successfully connected to peer: ${evt.detail.id.toString()}`);
     } catch (err) {
-      console.error(`Failed to dial peer (${evt.detail.id.toString()}):`, err);
+      // Silently handle connection failures - this is normal in P2P networks
+      // Only log if it's an unexpected error type
+      if (!err.message.includes('Could not connect')) {
+        console.warn(`Unexpected P2P error: ${err.message}`);
+      }
     }
   });
 
@@ -231,16 +236,20 @@ console.log("relay multiaddr:", relayAddr);
       return el
     })
 
-  console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
+  // Only log if peer count changed
+  if (!window.lastPeerCount3 || window.lastPeerCount3 !== peerList.length) {
+    console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList);
+    window.lastPeerCount3 = peerList.length;
+  }
 
   return libp2p;
 }
 
 export async function getRawGistFile(rawUrl) {
   const rawUrlOK = await getRawGistUrls(rawUrl);
-  console.log(rawUrlOK);
+  // Silently process Gist URLs
   const relayAddr = rawUrlOK[0].raw_url.trim();
-  console.log("Fetching raw Gist file from URL:", relayAddr);
+  // Fetching relay configuration...
   try {
     const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(relayAddr)}`);
     if (!response.ok) {
